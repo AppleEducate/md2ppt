@@ -1,15 +1,40 @@
 const fs = require('fs');
+const { EOL } = require('os');
 
 const pptx = require('pptxgenjs');
+const program = require('commander');
+ 
+program
+  .version('0.0.1')
+  .usage('[options] <file>')
+  .option('-t, --theme [theme name]', 'Specify a theme')
+  .option('-o, --output [file name]', 'Specify file name')
+  .parse(process.argv);
+
+if (!program.theme) {
+    process.stdout.write('Please specify a theme.' + EOL);
+    return;
+}
+
+if (!program.output) {
+    process.stdout.write('Please specify an output file.' + EOL);
+    return;
+}
+
+if (program.args.length !== 1) {
+    process.stdout.write('Please specify an input file.' + EOL);
+    return;
+}
+
 
 const { MarkdownSlideDeck } = require('./markdown-slide-deck');
 const { MarkdownSlide } = require('./markdown-slide');
 const {
     layoutWidth, layoutHeight, contentFontFamily,
     titleFontFamily, titleSlideTextLines, masters
-} = require('./themes/wintellectnow');
+} = require('./themes/' + program.theme);
 
-const mdContent = fs.readFileSync('./sample.md', 'utf8');
+const mdContent = fs.readFileSync(program.args[0], 'utf8');
 
 const slideDeck = new MarkdownSlideDeck(mdContent);
 
@@ -28,24 +53,23 @@ titleSlideTextLines.reduce((textLineOptions, textLine) => {
 }, {});
 
 slideDeck.slides.forEach(slide => {
-    const s = pptx.addNewSlide( Object.keys(masters).find(key => masters[key].title === slide.master) );
-    s.addText(slide.title, { x: 0.3, y: 0.32, h:0.75, w:13, valign:'top', align:'left', font_face: titleFontFamily, font_size: 48, color: '3F3F3F' });
 
-    s.addText(slide.subtitle, { x: 0.3, y: 1.07, h:0.5, w:13, valign:'top', align:'left', font_face: titleFontFamily, font_size: 40, color: 'EB3428' });
+    const masterKey = Object.keys(masters).find(key => masters[key].title === slide.master);
+    const newSlide = pptx.addNewSlide(masters[masterKey]);
 
-    const contentItems = slide.contentItems.map(contentItem => '- ' + contentItem).join('\n');
-    s.addText(contentItems, { x: 0.3, y: 2, h:4.75, w:13, valign:'top', align:'left', font_face: contentFontFamily, font_size: 28, color: '000000' });
-
-});
-
-pptx.save('sample', err => {
-
-    if (err) {
-        console.error(err);
-        return;
+    switch(masterKey) {
+        case 'DEMO_SLIDE':
+            newSlide.addText(slide.title, { x: 0.60, y: 4.15, h: 0.75, w: 10, valign:'top', align:'left', font_face: titleFontFamily, font_size: 32, color: 'FFFFFF' });
+            break;
+        default:
+            newSlide.addText(slide.title, { x: 0.3, y: 0.32, h:0.75, w:13, valign:'top', align:'left', font_face: titleFontFamily, font_size: 48, color: '3F3F3F' });
+            newSlide.addText(slide.subtitle, { x: 0.3, y: 1.07, h:0.5, w:13, valign:'top', align:'left', font_face: titleFontFamily, font_size: 40, color: 'EB3428' });
+            const contentItems = slide.contentItems.map(contentItem => '- ' + contentItem).join('\n');
+            newSlide.addText(contentItems, { x: 0.3, y: 2, h:4.75, w:13, valign:'top', align:'left', font_face: contentFontFamily, font_size: 28, color: '000000' });
+            break;
     }
 
-    console.log('saved!');
-    return;
 
 });
+
+pptx.save(program.output, () => {});

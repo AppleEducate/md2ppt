@@ -31,3 +31,9 @@ Subtitle: Collecting Data from Users
 -->
 
 - Forms allow data to be collected
+
+## Create a Simple Form
+
+<!--
+Master: Demo Slide
+-->

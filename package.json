@@ -9,6 +9,7 @@
   "author": "Eric W. Greene",
   "license": "MIT",
   "dependencies": {
+    "commander": "^2.9.0",
     "markdown": "^0.5.0",
     "pptxgenjs": "^1.2.1"
   }

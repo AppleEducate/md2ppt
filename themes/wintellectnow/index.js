@@ -80,7 +80,12 @@ module.exports = {
             margin: layoutMargins,
             bkgd:   darkBackground,
             shapes: [
-               ...footerBox
+                { 
+                    type: 'text', text: 'Demo', x: 0.60, y: 2.30, w:10, h:2,
+                    align:'left', valign:'bottom', font_size: 72,
+                    font_face: 'Segoe UI Light', color: 'FFFFFF',
+                },
+                ...footerBox
             ],
         },
         WEBSITE_SLIDE: {
